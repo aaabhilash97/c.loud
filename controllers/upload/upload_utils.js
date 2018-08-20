@@ -1,6 +1,6 @@
 const config = require("../../config");
 const logger = config.logger.logger;
-const s3 = config.aws.s3;
+const S3 = config.aws.S3;
 const r_client1 = config.redis.client1;
 const UPLOAD_EXPIRY = Number(process.env.UPLOAD_EXPIRY);
 
@@ -10,7 +10,7 @@ const FILE_BUCKET = process.env.FILE_BUCKET;
 
 function getByUploadId(key) {
     return new Promise((resolve, reject) => {
-        r_client1.hgetall(key, function(error, result) {
+        r_client1.hgetall(key, function (error, result) {
             r_client1.expire(key, UPLOAD_EXPIRY);
             return error ? reject(error) : resolve(result);
         });
@@ -24,7 +24,7 @@ function uploadPart(params) {
             /* required */
             Bucket: FILE_BUCKET,
             /* required */
-            Key: params.s3KeyName ||  params.Key || params.key,
+            Key: params.s3KeyName || params.Key || params.key,
             /* required */
             PartNumber: params.partNumber || params.PartNumber,
             /* required */
@@ -32,7 +32,7 @@ function uploadPart(params) {
             Body: params.content || params.Body,
             ContentLength: params.contentLength || params.ContentLength
         };
-        s3.uploadPart(s3_params, function(err, data) {
+        S3.uploadPart(s3_params, function (err, data) {
             if (err) {
                 logger.error(S, err); // an error occurred
                 err.reason = 'Part Upload Failed.';
@@ -58,14 +58,14 @@ function listParts(params, nextMarker) {
             MaxParts: 200,
             PartNumberMarker: nextMarker || 0
         };
-        s3.listParts(s3_params, function(error, data) {
+        S3.listParts(s3_params, function (error, data) {
             if (error) {
                 logger.error(S, error, s3_params);
                 return reject(error);
             } else {
                 logger.debug(S, 'Parts listed');
                 if (data.IsTruncated) {
-                    setTimeout(async() => {
+                    setTimeout(async () => {
                         try {
                             let next_parts = await listParts(
                                 s3_params, data.NextPartNumberMarker);
@@ -86,9 +86,9 @@ function listParts(params, nextMarker) {
 function completeS3Upload(params) {
     let S = F + '[completeS3Upload]';
     return new Promise(async (resolve, reject) => {
-        try{
+        try {
             let multi_parts = await listParts(params);
-            multi_parts = multi_parts.map((x)=>{
+            multi_parts = multi_parts.map((x) => {
                 return {
                     PartNumber: x.PartNumber,
                     ETag: x.ETag
@@ -102,7 +102,7 @@ function completeS3Upload(params) {
                 },
                 UploadId: params.UploadId || params.upload_id || params.s3_upload_id,
             };
-            s3.completeMultipartUpload(s3_params, function(error, data) {
+            S3.completeMultipartUpload(s3_params, function (error, data) {
                 if (error) {
                     logger.error(S, error, s3_params);
                     return reject(error);
@@ -111,13 +111,13 @@ function completeS3Upload(params) {
                     return resolve(data);
                 }
             });
-        }catch(exception){
+        } catch (exception) {
             return reject(exception);
         }
     });
 }
 
-async function completeUpload(params){
+async function completeUpload(params) {
     await completeS3Upload(params);
 
 }

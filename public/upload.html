@@ -6,14 +6,58 @@
     <script src="//cdn.rawgit.com/satazor/SparkMD5/master/spark-md5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/async@2.6.0/dist/async.min.js"></script>
     <script src="/static/upload_html5.js"></script>
+    <script src="https://cdn.rawgit.com/CryptoStore/crypto-js/3.1.2/build/rollups/sha512.js"></script>
     <title>File(s) size</title>
+    <style>
+        .spinner {
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+
+            margin: 100px auto;
+            -webkit-animation: sk-rotateplane 1.2s infinite ease-in-out;
+            animation: sk-rotateplane 1.2s infinite ease-in-out;
+        }
+
+        @-webkit-keyframes sk-rotateplane {
+            0% {
+                -webkit-transform: perspective(120px)
+            }
+            50% {
+                -webkit-transform: perspective(120px) rotateY(180deg)
+            }
+            100% {
+                -webkit-transform: perspective(120px) rotateY(180deg) rotateX(180deg)
+            }
+        }
+
+        @keyframes sk-rotateplane {
+            0% {
+                transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+                -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg)
+            }
+            50% {
+                transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+                -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg)
+            }
+            100% {
+                transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+                -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+            }
+        }
+    </style>
 </head>
 
 <body onload="fileAdded();">
     <progress min="0" max="100" value="0">0% complete</progress>
     <form name="uploadForm">
         <p>
-            <input id="uploadInput" type="file" name="myFiles" onchange="fileAdded();" multiple> selected files: <span id="fileNum">0</span>; total size: <span id="fileSize">0</span></p>
+            <div class="spinner"></div>
+            <input id="uploadInput" type="file" name="myFiles" onchange="fileAdded();" multiple> selected files:
+            <span id="fileNum">0</span>; total size:
+            <span id="fileSize">0</span>
+            <button id="gg">sdsjhdjk</button>
+        </p>
         <p>
             <input type="submit" value="Send file">
         </p>

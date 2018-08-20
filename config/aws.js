@@ -1,10 +1,13 @@
-var AWS = require('aws-sdk');
+const AWS = require('aws-sdk');
 const path = require('path');
-AWS.config.loadFromPath(
-    path.resolve(process.env.AWS_CRED_JSON.replace('~', process.env.HOME)));
 
-var s3 = new AWS.S3();
+// Load AWS config from AWS_CRED_JSON environment  variable
+AWS.config.loadFromPath(
+    path.resolve(process.env.AWS_CRED_JSON.replace('~', process.env.HOME))
+);
+
+const S3 = new AWS.S3();
 
 module.exports = {
-    s3: s3
+    S3: S3
 };

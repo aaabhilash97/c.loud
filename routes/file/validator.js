@@ -7,10 +7,12 @@
 //   "[\\-\\!\\@\\#\\$\\^\\&\\(\\)\\_\\+\\=\\[\\]\\{\\}\\;\\'\\,]"
 // ];
 // cv = new RegExp("^(\/(" + ranges.join('|') + ")*)+\/?$", 'g')
-const validator = require('validator');
-const _ = require('lodash');
 const { body } = require('express-validator/check');
-var ranges = [
+const { sanitizeBody } = require('express-validator/filter');
+const _ = require('lodash');
+const validator = require('validator');
+
+const ranges = [
     '[^\u0000-\u007F]',
     '\ud83c[\udf00-\udfff]', // U+1F300 to U+1F3FF
     '\ud83d[\udc00-\ude4f]', // U+1F400 to U+1F64F
@@ -18,40 +20,39 @@ var ranges = [
     '[A-Za-z\u00C0-\u00FF10-9\\s]',
     "[\\-\\!\\@\\#\\$\\^\\&\\(\\)\\_\\+\\=\\[\\]\\{\\}\\;\\'\\,\\.]"
 ];
-const { sanitizeBody } = require('express-validator/filter');
 
 const create = [
-    body("filePath").exists().custom(value => {
-        let fPath_regex = new RegExp("^(\/(" + ranges.join('|') + ")*)+\/?$", 'g');
-        return fPath_regex.test(value);
+    body("FilePath").exists().custom(value => {
+        let fPathRegex = new RegExp("^(\/(" + ranges.join('|') + ")*)+\/?$", 'g');
+        return fPathRegex.test(value);
     }),
-    sanitizeBody("filePath"),
+    sanitizeBody("FilePath"),
 
-    body('fileHash').exists().isMD5(),
-    sanitizeBody('fileHash'),
+    body('Hash').exists().isMD5(),
+    sanitizeBody('Hash'),
 
-    body("properties").custom((value)=>{
-        if(!_.isObject(value)){
+    body("Properties").custom((value) => {
+        if (!_.isObject(value)) {
             throw new Error("Invalid value for properties.");
         }
         return true;
     }),
-    sanitizeBody("properties"),
+    sanitizeBody("Properties"),
 
-    body('lastModified').exists().custom((value)=>{
-        if(!_.isNumber(value) && value < 0) return false;
+    body('LastModified').exists().custom((value) => {
+        if (!_.isNumber(value) && value < 0) return false;
         var valid = (new Date(value)).getTime() > 0;
         return valid;
     }),
-    sanitizeBody('lastModified'),
+    sanitizeBody('LastModified'),
 
-    body('size').exists().isByteLength({min: 0, max: 15000000000}),
-    sanitizeBody('size'),
+    body('Size').exists().isByteLength({ min: 0, max: 15000000000 }),
+    sanitizeBody('Size'),
 
-    body('type').exists().custom((value)=>{
+    body('Type').exists().custom((value) => {
         return validator.isMimeType(value);
     }),
-    sanitizeBody('type')
+    sanitizeBody('Type')
 ];
 
 
