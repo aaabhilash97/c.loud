@@ -2,6 +2,7 @@
 
 // const models = require("../../models");
 const { matchedData } = require('express-validator/filter');
+const { PassThrough } = require('stream');
 
 const config = require('../../config');
 const logger = config.logger.logger;
@@ -9,40 +10,44 @@ const logger = config.logger.logger;
 const _u = require("./upload_utils.js");
 const file_utils = require("../file/file_utils.js");
 
-const FILE_BUCKET = process.env.FILE_BUCKET;
 
 const F = "[upload/index.js]";
-const { PassThrough } = require('stream');
+
+const FILE_BUCKET = process.env.FILE_BUCKET;
+const CError = global.CError;
+
 
 async function upload(req, res) {
     const S = F + 'upload';
-    const query = matchedData(req, { locations: ['query'] });
-
-    const uploadId = query.uploadId;
-    const partNumber = query.partNumber;
-    const contentLength = req.header('content-length');
-    const contentMD5 = req.header('content-md5');
-
-    const upload_details = await _u.getByUploadId(uploadId);
-    const s3UploadId = upload_details.s3_upload_id;
-    const s3KeyName = upload_details.s3_key_name;
-    let pass = new PassThrough();
-    pass.length = Number(contentLength);
-    req.pipe(pass);
-    let params = {
-        /* required */
-        Bucket: FILE_BUCKET,
-        /* required */
-        Key: s3KeyName,
-        /* required */
-        PartNumber: partNumber,
-        /* required */
-        UploadId: s3UploadId,
-        Body: pass,
-        ContentLength: contentLength
-    };
-    if (contentMD5) params['ContentMD5'] = contentMD5;
     try {
+        const query = matchedData(req, { locations: ['query'] });
+
+        const UploadId = query.uploadId || query.UploadId;
+        const partNumber = query.partNumber;
+        const contentLength = req.header('content-length');
+        const contentMD5 = req.header('content-md5');
+        const upload_details = await _u.getByUploadId(UploadId);
+        if (!upload_details) throw new CError('No such upload exists', 'NoSuchUpload', 400, false);
+        const s3UploadId = upload_details.s3_upload_id;
+        const s3KeyName = upload_details.s3_key_name;
+        if (!s3UploadId || !s3KeyName) throw new CError('No such upload exists', 'NoSuchUpload', 400, false);
+        let pass = new PassThrough();
+        pass.length = Number(contentLength);
+        req.pipe(pass);
+        let params = {
+            /* required */
+            Bucket: FILE_BUCKET,
+            /* required */
+            Key: s3KeyName,
+            /* required */
+            PartNumber: partNumber,
+            /* required */
+            UploadId: s3UploadId,
+            Body: pass,
+            ContentLength: contentLength
+        };
+        if (contentMD5) params['ContentMD5'] = contentMD5;
+
         // content = null;
         let data = await _u.uploadPart(params);
         logger.info(S, 'Part upload', data, pass.length); // successful response
@@ -60,8 +65,9 @@ async function upload_finish(req, res) {
     try {
         const userId = req.user.userId;
         const query = matchedData(req, { locations: ['query'] });
-        const uploadId = query.uploadId;
-        const upload_details = await _u.getByUploadId(uploadId);
+        const UploadId = query.uploadId || query.UploadId;
+        const upload_details = await _u.getByUploadId(UploadId);
+        if (!upload_details) throw new CError('No such upload exists', 'NoSuchUpload', 400, false);
         const s3UploadId = upload_details.s3_upload_id;
         const s3KeyName = upload_details.s3_key_name;
         let s3_params = {
@@ -69,7 +75,8 @@ async function upload_finish(req, res) {
             s3_upload_id: s3UploadId
         };
         await _u.completeS3Upload(s3_params);
-        await file_utils.completUpload(userId, uploadId);
+        await file_utils.completUpload(userId, UploadId);
+        await _u.removeUploadId(UploadId);
         return res.status(200).json({
             msg: "uploaded successfully"
         });

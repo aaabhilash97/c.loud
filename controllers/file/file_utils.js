@@ -72,9 +72,7 @@ async function getFile({ UserId, FilePath, Hash, throwError }) {
  */
 async function createFolders({ UserId, folderPath }) {
     let dirNames = folderPath.split('/').filter(x => x);
-    if (_.isEmpty(dirNames)) {
-        dirNames = ['/'];
-    }
+    dirNames.unshift('/');
     let Parent = 'root';
     let Name = '';
     let folder;
@@ -92,7 +90,7 @@ async function createFolders({ UserId, folderPath }) {
 
         // Create folder if not exists
         if (_.isEmpty(folder)) {
-            folder = createFolder({
+            folder = await createFolder({
                 UserId,
                 Name,
                 Parent,
@@ -188,7 +186,8 @@ function addToPendingFiles(file) {
     return models.PendFiles.create({
         UserId: file.UserId,
         UploadId: file.UploadId,
-        File: file
+        File: file,
+        FilePath: file.FilePath
     });
 }
 
@@ -208,8 +207,12 @@ function deletePendingFile(UserId, UploadId) {
 
 
 async function completUpload(UserId, UploadId) {
-    let file = await getPendingFile(UserId, UploadId);
-    await createFile(file.File._doc);
+    let pendingFile = await getPendingFile(UserId, UploadId);
+    let folderPath = path.dirname(pendingFile.FilePath);
+    let parentFolder = await createFolders({ UserId, folderPath });
+    let file = pendingFile.File._doc;
+    file.Parent = parentFolder._id.toString();
+    await createFile(file);
     await makeFileVersionActive({
         UserId: file.userId,
         Parent: file.Parent,

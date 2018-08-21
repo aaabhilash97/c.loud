@@ -17,6 +17,14 @@ function getByUploadId(key) {
     });
 }
 
+function removeUploadId(key) {
+    return new Promise((resolve, reject) => {
+        r_client1.del(key, function (error, result) {
+            return error ? reject(error) : resolve(result);
+        });
+    });
+}
+
 function uploadPart(params) {
     const S = F + '[upload]';
     return new Promise((resolve, reject) => {
@@ -125,6 +133,7 @@ async function completeUpload(params) {
 
 module.exports = {
     getByUploadId,
+    removeUploadId,
     uploadPart,
     listParts,
     completeS3Upload,

@@ -1,5 +1,5 @@
 function send_error_response(ex, res) {
-    let status_code = ex.reason ? 400 : 500;
+    let status_code = ex.httpStatusCode || 500;
     return res.status(status_code).json({
         status: "error",
         error: {
@@ -10,9 +10,12 @@ function send_error_response(ex, res) {
     });
 }
 
-function CError(msg, code) {
+function CError(msg, code, httpStatusCode, retryable = false) {
     let error = new Error(msg);
+    if (msg) error.reason = msg;
     if (code) error.code = code;
+    if (httpStatusCode) error.httpStatusCode = httpStatusCode;
+    error.retryable = retryable;
     return error;
 }
 

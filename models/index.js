@@ -76,6 +76,7 @@ const pendingFilesSchema = new Schema({
     UserId: { type: String, required: true },
     UploadId: { type: String, required: true },
     File: filesSchema,
+    FilePath: { type: String, required: true },
     CreatedAt: { type: Date, default: Date.now },
     ModifiedAt: { type: Date, default: Date.now }
 });

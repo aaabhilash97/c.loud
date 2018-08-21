@@ -48,6 +48,7 @@ async function create(req, res) {
                 let folderPath = path.dirname(file.FilePath);
                 let parentFolder = await _u.createFolders({ UserId, folderPath });
                 file.Parent = parentFolder.id;
+                file.Owner = UserId;
                 await _u.createFile(file);
                 await _u.makeFileVersionActive({
                     UserId: UserId,
@@ -62,9 +63,6 @@ async function create(req, res) {
                     file: file
                 });
             } else {
-                let folderPath = path.dirname(file.FilePath);
-                let parentFolder = await _u.createFolders({ UserId, folderPath });
-                file.Parent = parentFolder._id;
                 let UploadId = 'u_' + md5(sessionId + file.FilePath + file.Hash);
                 file.UploadId = UploadId;
                 file.Owner = file.Owner || UserId;
