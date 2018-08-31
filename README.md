@@ -1,6 +1,6 @@
 # c.loud
 
-Cloud storage application with AWS3 and mongoose and Sequelizejs
+Cloud storage application with AWS3, mongoose and Sequelizejs
 
 ## Status
 
