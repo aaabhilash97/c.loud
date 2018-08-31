@@ -1,6 +1,3 @@
-// const _ = require("lodash");
-
-// const models = require("../../models");
 const { matchedData } = require('express-validator/filter');
 const { PassThrough } = require('stream');
 
@@ -10,9 +7,7 @@ const logger = config.logger.logger;
 const _u = require("./upload_utils.js");
 const file_utils = require("../file/file_utils.js");
 
-
 const F = "[upload/index.js]";
-
 const FILE_BUCKET = process.env.FILE_BUCKET;
 const CError = global.CError;
 
