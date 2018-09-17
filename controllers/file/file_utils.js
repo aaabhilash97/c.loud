@@ -4,7 +4,7 @@
 
 const _ = require('lodash');
 const path = require('path');
-const models = require('../../models');
+const models = require('../../models')[process.env.DRIVER];
 
 const config = require('../../config');
 const logger = config.logger.logger;

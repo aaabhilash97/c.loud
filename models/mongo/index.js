@@ -1,8 +1,8 @@
 /**
  * @author abhilash.km
- * @description Mongoose schema for c.loud
+ * @description Mongoose schema.
  */
-const config = require('../config');
+const config = require('../../config');
 
 const mongoose = require('mongoose');
 const mongooseIntlPhoneNumber = require('mongoose-intl-phone-number');
@@ -14,7 +14,8 @@ const Schema = mongoose.Schema;
 /**
  * @description Connect to mongodb cluster.
  */
-mongoose.connect(process.env.MONGODB, { useMongoClient: true }, function (error) {
+mongoose.set("useCreateIndex", true);
+mongoose.connect(process.env.MONGODB, { useNewUrlParser: true }, function (error) {
     if (error) {
         logger.error("Mongodb connection error: ", error);
     } else {
@@ -23,7 +24,7 @@ mongoose.connect(process.env.MONGODB, { useMongoClient: true }, function (error)
 });
 
 
-/**************** merchants  Scema **************************/
+/**************** merchants  Schema **************************/
 const merchantSchema = new Schema({
     MerchantId: { type: String, required: true },
     Domain: { type: String, required: true },
@@ -33,11 +34,11 @@ const merchantSchema = new Schema({
 merchantSchema.index({ MerchantId: 1 }, { unique: true });
 merchantSchema.index({ Domain: 1 }, { unique: true });
 
-/**************** merchants  Scema **************************/
+/**************** merchants  Schema **************************/
 
 
 
-/**************** Files Scema **************************/
+/**************** Files Schema **************************/
 const filesSchema = new Schema({
     UserId: { type: String, required: true },
     Owner: { type: String, required: true },
@@ -60,6 +61,7 @@ const filesSchema = new Schema({
     LastModified: { type: Number, required: true },
     Type: { type: String, required: true },
     Active: { type: Boolean, required: true, default: false },
+    Trashed: { type: Boolean, required: true, default: false },
     Properties: { type: Object, default: {} },
     HashVerified: { type: Boolean, required: true, default: false },
     CreatedAt: { type: Date, default: Date.now },
@@ -68,10 +70,10 @@ const filesSchema = new Schema({
 
 filesSchema.index({ UserId: 1, Parent: -1, Name: 1, Hash: -1 }, { unique: true });
 filesSchema.index({ Hash: 1 });
-/**************** Files Scema **************************/
+/**************** Files Schema **************************/
 
 
-/**************** Pending Files Scema **************************/
+/**************** Pending Files Schema **************************/
 const pendingFilesSchema = new Schema({
     UserId: { type: String, required: true },
     UploadId: { type: String, required: true },
@@ -83,11 +85,11 @@ const pendingFilesSchema = new Schema({
 
 pendingFilesSchema.index({ UserId: 1, UploadId: -1 }, { unique: true });
 
-/**************** Pending Files Scema **************************/
+/**************** Pending Files Schema **************************/
 
 
 
-/**************** Users Scema **************************/
+/**************** Users Schema **************************/
 const usersSchema = new Schema({
     MerchantId: { type: String, required: true },
     UserId: { type: String, required: true, unique: true },
@@ -95,6 +97,7 @@ const usersSchema = new Schema({
     SecondaryEmail: { type: String, unique: true },
     PhoneNumber: { type: String, unique: true },
     Password: { type: String, required: true },
+    Active: { type: Boolean, required: true, default: false },
     CreatedAt: { type: Date, default: Date.now },
     ModifiedAt: { type: Date, default: Date.now }
 });
@@ -112,11 +115,11 @@ usersSchema.index({ MerchantId: 1, Email: -1 }, { unique: true });
 usersSchema.index({ MerchantId: 1, SecondaryEmail: -1 }, { unique: true });
 usersSchema.index({ MerchantId: 1, PhoneNumber: -1 }, { unique: true });
 
-/**************** users Scema **************************/
+/**************** users Schema **************************/
 
 
 
-/**************** Sync Scema **************************/
+/**************** Sync Schema **************************/
 const syncSchema = new Schema({
     UserId: { type: String, required: true },
     FileId: { type: String, required: true },
@@ -129,12 +132,12 @@ const syncSchema = new Schema({
 
 syncSchema.index({ UserId: 1, FileId: -1 }, { unique: true });
 
-/**************** Sync Scema **************************/
+/**************** Sync Schema **************************/
 
 
 
 
-/**************** Activity Scema **************************/
+/**************** Activity Schema **************************/
 
 const activitySchema = new Schema({
     UserId: { type: String, required: true },
@@ -148,12 +151,12 @@ const activitySchema = new Schema({
 
 activitySchema.index({ UserId: 1, FileId: -1 });
 
-/**************** Activity Scema **************************/
+/**************** Activity Schema **************************/
 
 
 
 
-/**************** Shares Scema **************************/
+/**************** Shares Schema **************************/
 const sharesSchema = new Schema({
     UserId: { type: String, required: true },
     ShareId: { type: String, required: true },
@@ -165,7 +168,7 @@ const sharesSchema = new Schema({
 });
 
 sharesSchema.index({ UserId: 1, ShareId: 1 }, { unique: true });
-/**************** Shares Scema **************************/
+/**************** Shares Schema **************************/
 
 
 const Merchants = mongoose.model('Merchants', merchantSchema);
